@@ -1,0 +1,189 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sentiment Analysis Tool</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f9;
+            display: flex;
+            justify-content: center;
+        }
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        textarea {
+            width: 100%;
+            height: 100px;
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            resize: vertical;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 4px;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #clear-btn {
+            background-color: #dc3545;
+        }
+        #clear-btn:hover {
+            background-color: #c82333;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            display: none;
+        }
+        #visualizations {
+            margin-top: 20px;
+        }
+        img {
+            max-width: 100%;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+        .analysis {
+            margin-bottom: 20px;
+        }
+        .analysis ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        .analysis li {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Sentiment Analysis Tool</h1>
+        <p>Enter a sentence, word, or paragraph to analyze its sentiment.</p>
+        <textarea id="text-input" placeholder="Enter text here..."></textarea>
+        <div>
+            <button onclick="analyzeText()">Analyze</button>
+            <button onclick="visualize()">Visualize</button>
+            <button id="clear-btn" onclick="clearResults()">Clear</button>
+        </div>
+        <div id="result"></div>
+        <div id="visualizations"></div>
+    </div>
+    <script>
+        async function analyzeText() {
+            const text = document.getElementById('text-input').value;
+            const resultDiv = document.getElementById('result');
+            
+            if (!text.trim()) {
+                resultDiv.innerHTML = '<p class="error">Please enter some text to analyze.</p>';
+                resultDiv.style.display = 'block';
+                return;
+            }
+
+            try {
+                const response = await fetch('/analyze', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: `text=${encodeURIComponent(text)}`
+                });
+                const data = await response.json();
+                
+                if (data.error) {
+                    resultDiv.innerHTML = `<p class="error">${data.error}</p>`;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="analysis">
+                            <h3>Analysis Result</h3>
+                            <p><strong>Text:</strong> ${data.original_text}</p>
+                            <p><strong>Sentiment:</strong> ${data.sentiment}</p>
+                            <p><strong>Polarity Score:</strong> ${data.polarity} (-1 to 1)</p>
+                            <p><strong>Average Positive Polarity:</strong> ${data.positive_polarity}</p>
+                            <p><strong>Average Negative Polarity:</strong> ${data.negative_polarity}</p>
+                            <p><strong>Combined Polarity:</strong> ${data.combined_polarity}</p>
+                            <p><strong>Positive Words:</strong></p>
+                            <ul>${data.positive_words.map(word => `<li>${word}</li>`).join('') || '<li>None</li>'}</ul>
+                            <p><strong>Negative Words:</strong></p>
+                            <ul>${data.negative_words.map(word => `<li>${word}</li>`).join('') || '<li>None</li>'}</ul>
+                        </div>
+                    `;
+                }
+                resultDiv.style.display = 'block';
+            } catch (error) {
+                resultDiv.innerHTML = '<p class="error">An error occurred. Please try again.</p>';
+                console.error('Analyze error:', error);
+            }
+        }
+
+        async function visualize() {
+            const visDiv = document.getElementById('visualizations');
+            try {
+                const response = await fetch('/visualize');
+                const data = await response.json();
+                
+                if (data.error) {
+                    visDiv.innerHTML = `<p class="error">${data.error}</p>`;
+                } else {
+                    visDiv.innerHTML = '';
+                    if (data.sentiment_distribution) {
+                        visDiv.innerHTML += `<img src="data:image/png;base64,${data.sentiment_distribution}" alt="Sentiment Distribution">`;
+                    }
+                    if (data.positive_wordcloud) {
+                        visDiv.innerHTML += `<img src="data:image/png;base64,${data.positive_wordcloud}" alt="Positive Word Cloud">`;
+                    }
+                    if (data.negative_wordcloud) {
+                        visDiv.innerHTML += `<img src="data:image/png;base64,${data.negative_wordcloud}" alt="Negative Word Cloud">`;
+                    }
+                }
+            } catch (error) {
+                visDiv.innerHTML = '<p class="error">An error occurred while generating visualizations. Check the server logs for details.</p>';
+                console.error('Visualize error:', error);
+            }
+        }
+
+        async function clearResults() {
+            const resultDiv = document.getElementById('result');
+            const visDiv = document.getElementById('visualizations');
+            try {
+                await fetch('/clear', { method: 'POST' });
+                resultDiv.style.display = 'none';
+                resultDiv.innerHTML = '';
+                visDiv.innerHTML = '';
+                document.getElementById('text-input').value = '';
+            } catch (error) {
+                visDiv.innerHTML = '<p class="error">An error occurred while clearing results.</p>';
+                console.error('Clear error:', error);
+            }
+        }
+    </script>
+</body>
+</html>
