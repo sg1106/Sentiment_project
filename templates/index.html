@@ -130,10 +130,7 @@
                             <p><strong>Average Positive Polarity:</strong> ${data.positive_polarity}</p>
                             <p><strong>Average Negative Polarity:</strong> ${data.negative_polarity}</p>
                             <p><strong>Combined Polarity:</strong> ${data.combined_polarity}</p>
-                            <p><strong>Positive Words:</strong></p>
-                            <ul>${data.positive_words.map(word => `<li>${word}</li>`).join('') || '<li>None</li>'}</ul>
-                            <p><strong>Negative Words:</strong></p>
-                            <ul>${data.negative_words.map(word => `<li>${word}</li>`).join('') || '<li>None</li>'}</ul>
+                            
                         </div>
                     `;
                 }
