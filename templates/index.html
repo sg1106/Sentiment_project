@@ -1,0 +1,1346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SentimentIQ — Intelligent Feedback Intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080B14;
+    --surface: #0F1320;
+    --card: #141827;
+    --card2: #1A1F30;
+    --border: #232840;
+    --border-light: #2D3450;
+    --accent: #7B6FE8;
+    --accent2: #5B8BF5;
+    --positive: #00D68F;
+    --negative: #FF4D6D;
+    --neutral: #6C7FFF;
+    --warning: #FFB830;
+    --text: #E8EAF0;
+    --text2: #A0A8C0;
+    --text3: #606880;
+    --font: 'Inter', sans-serif;
+    --mono: 'JetBrains Mono', monospace;
+    --radius: 12px;
+    --radius-lg: 18px;
+    --shadow: 0 4px 24px rgba(0,0,0,0.4);
+    --shadow-glow: 0 0 40px rgba(123, 111, 232, 0.12);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── LAYOUT ── */
+  .shell { display: flex; min-height: 100vh; }
+
+  .sidebar {
+    width: 240px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    z-index: 100;
+    transition: transform 0.3s;
+  }
+
+  .sidebar-logo {
+    padding: 24px 20px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .logo-mark {
+    font-size: 22px;
+    font-weight: 900;
+    letter-spacing: -0.5px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .logo-sub { font-size: 11px; color: var(--text3); letter-spacing: 1px; text-transform: uppercase; margin-top: 2px; }
+
+  .nav { padding: 16px 12px; flex: 1; }
+  .nav-section { font-size: 10px; color: var(--text3); letter-spacing: 1.5px; text-transform: uppercase; padding: 12px 8px 6px; }
+
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13.5px;
+    font-weight: 500;
+    color: var(--text2);
+    transition: all 0.15s;
+    margin-bottom: 2px;
+  }
+  .nav-item:hover { background: var(--card); color: var(--text); }
+  .nav-item.active { background: rgba(123,111,232,0.15); color: var(--accent); }
+  .nav-item .icon { font-size: 16px; width: 20px; text-align: center; }
+
+  .sidebar-footer {
+    padding: 16px;
+    border-top: 1px solid var(--border);
+    font-size: 11px; color: var(--text3);
+  }
+
+  .main {
+    margin-left: 240px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .topbar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 32px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky; top: 0; z-index: 50;
+  }
+  .topbar-title { font-size: 15px; font-weight: 600; }
+  .topbar-actions { display: flex; gap: 10px; align-items: center; }
+
+  .content { padding: 32px; max-width: 1400px; }
+
+  /* ── TABS ── */
+  .tab-bar {
+    display: flex;
+    gap: 4px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 32px;
+  }
+  .tab {
+    padding: 14px 20px;
+    font-size: 13.5px;
+    font-weight: 500;
+    color: var(--text3);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .tab:hover { color: var(--text2); }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+  }
+  .card-sm { padding: 16px 20px; }
+  .card-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text2);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 16px;
+  }
+
+  /* ── STAT CARDS ── */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .stat-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--accent-color, var(--accent));
+  }
+  .stat-label { font-size: 11px; color: var(--text3); letter-spacing: 0.8px; text-transform: uppercase; }
+  .stat-value {
+    font-size: 32px;
+    font-weight: 800;
+    line-height: 1.1;
+    margin: 8px 0 4px;
+    font-variant-numeric: tabular-nums;
+  }
+  .stat-sub { font-size: 12px; color: var(--text3); }
+  .stat-pos { color: var(--positive); }
+  .stat-neg { color: var(--negative); }
+  .stat-neu { color: var(--neutral); }
+  .stat-acc { color: var(--accent); }
+
+  /* ── FORM ── */
+  .input-area {
+    background: var(--card2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    font-family: var(--font);
+    font-size: 14.5px;
+    color: var(--text);
+    width: 100%;
+    resize: vertical;
+    min-height: 100px;
+    transition: border-color 0.2s;
+    outline: none;
+  }
+  .input-area:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(123,111,232,0.12); }
+  .input-area::placeholder { color: var(--text3); }
+
+  .input-row { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; margin-top: 12px; }
+
+  select.select-field {
+    background: var(--card2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 12px;
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 13px;
+    outline: none;
+    cursor: pointer;
+    flex: 1; min-width: 120px;
+  }
+  select.select-field:focus { border-color: var(--accent); }
+
+  input.tag-input {
+    background: var(--card2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 12px;
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 13px;
+    outline: none;
+    flex: 1;
+    min-width: 140px;
+  }
+  input.tag-input:focus { border-color: var(--accent); }
+  input.tag-input::placeholder { color: var(--text3); }
+
+  /* ── BUTTONS ── */
+  .btn {
+    padding: 10px 22px;
+    border-radius: 9px;
+    border: none;
+    font-family: var(--font);
+    font-size: 13.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: inline-flex; align-items: center; gap: 7px;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff;
+    box-shadow: 0 4px 16px rgba(123,111,232,0.3);
+  }
+  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(123,111,232,0.45); }
+  .btn-ghost {
+    background: var(--card2);
+    border: 1px solid var(--border);
+    color: var(--text2);
+  }
+  .btn-ghost:hover { background: var(--card); color: var(--text); border-color: var(--border-light); }
+  .btn-danger {
+    background: rgba(255,77,109,0.12);
+    border: 1px solid rgba(255,77,109,0.3);
+    color: var(--negative);
+  }
+  .btn-danger:hover { background: rgba(255,77,109,0.2); }
+  .btn-sm { padding: 7px 14px; font-size: 12.5px; }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
+
+  /* ── BADGES ── */
+  .badge {
+    display: inline-flex; align-items: center;
+    padding: 3px 9px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+  }
+  .badge-pos { background: rgba(0,214,143,0.12); color: var(--positive); border: 1px solid rgba(0,214,143,0.25); }
+  .badge-neg { background: rgba(255,77,109,0.12); color: var(--negative); border: 1px solid rgba(255,77,109,0.25); }
+  .badge-neu { background: rgba(108,127,255,0.12); color: var(--neutral); border: 1px solid rgba(108,127,255,0.25); }
+  .badge-warn { background: rgba(255,184,48,0.12); color: var(--warning); border: 1px solid rgba(255,184,48,0.25); }
+  .badge-acc { background: rgba(123,111,232,0.12); color: var(--accent); border: 1px solid rgba(123,111,232,0.25); }
+
+  /* ── RESULT CARD ── */
+  .result-entry {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    margin-bottom: 12px;
+    border-left: 3px solid var(--border);
+    transition: border-color 0.2s;
+    animation: slideIn 0.25s ease;
+  }
+  @keyframes slideIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+  .result-entry.pos { border-left-color: var(--positive); }
+  .result-entry.neg { border-left-color: var(--negative); }
+  .result-entry.neu { border-left-color: var(--neutral); }
+
+  .result-header { display: flex; align-items: flex-start; gap: 12px; justify-content: space-between; }
+  .result-text { font-size: 14px; line-height: 1.5; flex: 1; color: var(--text); }
+  .result-meta { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; align-items: center; }
+  .polarity-bar {
+    height: 4px; background: var(--card2); border-radius: 2px; width: 100%; margin-top: 10px; overflow: hidden;
+  }
+  .polarity-fill { height: 100%; border-radius: 2px; transition: width 0.5s ease; }
+
+  /* ── CHARTS ── */
+  .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 20px; margin-top: 24px; }
+  .chart-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 0; overflow: hidden; }
+  .chart-card img { width: 100%; display: block; border-radius: 0 0 var(--radius-lg) var(--radius-lg); }
+  .chart-header { padding: 16px 20px 12px; border-bottom: 1px solid var(--border); }
+  .chart-title { font-size: 13px; font-weight: 600; color: var(--text2); }
+
+  /* ── PM REPORT ── */
+  .health-banner {
+    border-radius: var(--radius-lg);
+    padding: 28px 32px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 32px;
+    position: relative;
+    overflow: hidden;
+  }
+  .health-banner.strong { background: linear-gradient(135deg, rgba(0,214,143,0.12), rgba(0,214,143,0.03)); border: 1px solid rgba(0,214,143,0.2); }
+  .health-banner.moderate { background: linear-gradient(135deg, rgba(108,127,255,0.12), rgba(108,127,255,0.03)); border: 1px solid rgba(108,127,255,0.2); }
+  .health-banner.risk { background: linear-gradient(135deg, rgba(255,77,109,0.12), rgba(255,77,109,0.03)); border: 1px solid rgba(255,77,109,0.2); }
+
+  .health-score { font-size: 64px; font-weight: 900; line-height: 1; font-variant-numeric: tabular-nums; }
+  .health-score.strong { color: var(--positive); }
+  .health-score.moderate { color: var(--neutral); }
+  .health-score.risk { color: var(--negative); }
+
+  .nps-gauge { text-align: center; }
+  .nps-label { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 1px; }
+
+  .priority-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .priority-table th {
+    text-align: left; padding: 10px 14px;
+    font-size: 11px; color: var(--text3); letter-spacing: 0.8px; text-transform: uppercase;
+    border-bottom: 1px solid var(--border);
+  }
+  .priority-table td { padding: 12px 14px; border-bottom: 1px solid rgba(35,40,64,0.6); vertical-align: top; }
+  .priority-table tr:last-child td { border-bottom: none; }
+  .priority-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+  .p-badge {
+    display: inline-block; width: 30px; text-align: center;
+    padding: 2px 0; border-radius: 5px; font-size: 11px; font-weight: 700; font-family: var(--mono);
+  }
+  .p0 { background: rgba(255,77,109,0.2); color: var(--negative); }
+  .p1 { background: rgba(255,184,48,0.15); color: var(--warning); }
+  .p2 { background: rgba(108,127,255,0.15); color: var(--neutral); }
+
+  .action-card {
+    background: var(--card2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+    margin-bottom: 10px;
+    display: flex; gap: 14px; align-items: flex-start;
+  }
+  .action-content { flex: 1; }
+  .action-title { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+  .action-rationale { font-size: 12.5px; color: var(--text2); margin-bottom: 6px; line-height: 1.4; }
+  .action-owner { font-size: 11px; color: var(--text3); font-family: var(--mono); }
+
+  /* ── THEME BARS ── */
+  .theme-bar-wrap { margin-bottom: 10px; }
+  .theme-bar-label { display: flex; justify-content: space-between; font-size: 12.5px; color: var(--text2); margin-bottom: 5px; }
+  .theme-bar-track { height: 6px; background: var(--card2); border-radius: 3px; overflow: hidden; }
+  .theme-bar-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--accent), var(--accent2)); transition: width 0.8s ease; }
+
+  /* ── BULK IMPORT ── */
+  .bulk-area {
+    background: var(--card2);
+    border: 2px dashed var(--border-light);
+    border-radius: var(--radius);
+    padding: 28px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .bulk-area:hover { border-color: var(--accent); background: rgba(123,111,232,0.04); }
+  .bulk-area.drag-over { border-color: var(--accent); background: rgba(123,111,232,0.08); }
+
+  /* ── MISC ── */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+  .gap-y { display: flex; flex-direction: column; gap: 16px; }
+  .flex-row { display: flex; gap: 12px; align-items: center; }
+  .flex-between { display: flex; justify-content: space-between; align-items: center; }
+  .mb-16 { margin-bottom: 16px; }
+  .mb-24 { margin-bottom: 24px; }
+  .mt-16 { margin-top: 16px; }
+  .mt-24 { margin-top: 24px; }
+
+  .text-sm { font-size: 13px; }
+  .text-xs { font-size: 11.5px; }
+  .text-muted { color: var(--text2); }
+  .text-dim { color: var(--text3); }
+  .mono { font-family: var(--mono); }
+
+  .divider { height: 1px; background: var(--border); margin: 20px 0; }
+
+  .loader { display: none; text-align: center; padding: 24px; }
+  .spinner {
+    width: 32px; height: 32px;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    display: inline-block;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .empty-state {
+    text-align: center;
+    padding: 48px 24px;
+    color: var(--text3);
+  }
+  .empty-state .icon { font-size: 40px; margin-bottom: 12px; }
+  .empty-state p { font-size: 14px; }
+
+  .toast {
+    position: fixed; bottom: 24px; right: 24px;
+    background: var(--card2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 14px 20px;
+    font-size: 13.5px; color: var(--text);
+    z-index: 1000; display: none;
+    box-shadow: var(--shadow);
+    animation: toastIn 0.25s ease;
+  }
+  @keyframes toastIn { from { transform: translateY(16px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  .toast.success { border-left: 3px solid var(--positive); }
+  .toast.error { border-left: 3px solid var(--negative); }
+
+  .char-count { font-size: 11px; color: var(--text3); text-align: right; margin-top: 4px; }
+
+  /* confidence meter */
+  .conf-meter { display: flex; gap: 3px; }
+  .conf-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); }
+  .conf-dot.active { background: var(--accent); }
+
+  /* emotion chip */
+  .emotion-chip {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 11px; font-weight: 600;
+    background: rgba(255,255,255,0.05);
+    color: var(--text2);
+  }
+
+  /* scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 3px; }
+
+  @media (max-width: 900px) {
+    .sidebar { transform: translateX(-100%); }
+    .main { margin-left: 0; }
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    .content { padding: 16px; }
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-mark">SentimentIQ</div>
+      <div class="logo-sub">Feedback Intelligence</div>
+    </div>
+    <div class="nav">
+      <div class="nav-section">Analysis</div>
+      <div class="nav-item active" onclick="switchTab('analyze')">
+        <span class="icon">🔍</span> Analyze
+      </div>
+      <div class="nav-item" onclick="switchTab('bulk')">
+        <span class="icon">📋</span> Bulk Import
+      </div>
+      <div class="nav-section">Insights</div>
+      <div class="nav-item" onclick="switchTab('dashboard')">
+        <span class="icon">📊</span> Dashboard
+      </div>
+      <div class="nav-item" onclick="switchTab('visualize')">
+        <span class="icon">📈</span> Charts
+      </div>
+      <div class="nav-item" onclick="switchTab('pm')">
+        <span class="icon">🎯</span> PM Report
+      </div>
+      <div class="nav-section">Data</div>
+      <div class="nav-item" onclick="switchTab('history')">
+        <span class="icon">🗂️</span> History
+      </div>
+    </div>
+    <div class="sidebar-footer">
+      <div>Dual-engine NLP</div>
+      <div style="margin-top:2px;">TextBlob + VADER ensemble</div>
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-title" id="page-title">Text Analysis</div>
+      <div class="topbar-actions">
+        <span id="entry-count" class="badge badge-acc">0 entries</span>
+        <button class="btn btn-ghost btn-sm" onclick="exportData()">⬇ Export</button>
+        <button class="btn btn-danger btn-sm" onclick="clearAll()">✕ Clear</button>
+      </div>
+    </div>
+
+    <!-- TAB PANELS -->
+    <div id="tab-analyze" class="tab-panel active">
+      <div class="content">
+        <!-- Input Card -->
+        <div class="card mb-24">
+          <div class="card-title">Analyze Text</div>
+          <textarea class="input-area" id="text-input" placeholder="Paste customer feedback, review, social media comment, NPS response, support ticket…" rows="5" oninput="updateCharCount(this)"></textarea>
+          <div class="char-count"><span id="char-count">0</span> characters</div>
+          <div class="input-row">
+            <select class="select-field" id="source-select">
+              <option value="manual">📝 Manual Entry</option>
+              <option value="customer_review">⭐ Customer Review</option>
+              <option value="nps_survey">📊 NPS Survey</option>
+              <option value="support_ticket">🎫 Support Ticket</option>
+              <option value="social_media">📱 Social Media</option>
+              <option value="interview">🎙️ Interview Note</option>
+              <option value="sales_call">📞 Sales Call</option>
+              <option value="churn_exit">🚪 Churn Exit Survey</option>
+            </select>
+            <input type="text" class="tag-input" id="tag-input" placeholder="Tags: e.g. Q4, mobile, enterprise…">
+            <button class="btn btn-primary" onclick="analyzeText()" id="analyze-btn">
+              <span>⚡</span> Analyze
+            </button>
+          </div>
+        </div>
+
+        <!-- Live Stats (shown after first entry) -->
+        <div id="live-stats" style="display:none;">
+          <div class="stats-grid">
+            <div class="stat-card" style="--accent-color: var(--positive)">
+              <div class="stat-label">Positive</div>
+              <div class="stat-value stat-pos" id="stat-pos">0</div>
+              <div class="stat-sub" id="stat-pos-pct">0%</div>
+            </div>
+            <div class="stat-card" style="--accent-color: var(--negative)">
+              <div class="stat-label">Negative</div>
+              <div class="stat-value stat-neg" id="stat-neg">0</div>
+              <div class="stat-sub" id="stat-neg-pct">0%</div>
+            </div>
+            <div class="stat-card" style="--accent-color: var(--neutral)">
+              <div class="stat-label">Neutral</div>
+              <div class="stat-value stat-neu" id="stat-neu">0</div>
+              <div class="stat-sub" id="stat-neu-pct">0%</div>
+            </div>
+            <div class="stat-card" style="--accent-color: var(--accent)">
+              <div class="stat-label">Avg Polarity</div>
+              <div class="stat-value stat-acc" id="stat-polarity">—</div>
+              <div class="stat-sub">ensemble score</div>
+            </div>
+            <div class="stat-card" style="--accent-color: var(--warning)">
+              <div class="stat-label">NPS Score</div>
+              <div class="stat-value" id="stat-nps" style="color:var(--warning)">—</div>
+              <div class="stat-sub" id="stat-nps-label">—</div>
+            </div>
+            <div class="stat-card" style="--accent-color: var(--negative)">
+              <div class="stat-label">🚨 Urgent</div>
+              <div class="stat-value stat-neg" id="stat-urgent">0</div>
+              <div class="stat-sub" id="stat-churn-risk">0 churn risk</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Results -->
+        <div id="results-container"></div>
+      </div>
+    </div>
+
+    <!-- BULK IMPORT -->
+    <div id="tab-bulk" class="tab-panel">
+      <div class="content">
+        <div class="card mb-24">
+          <div class="card-title">Bulk Import</div>
+          <p class="text-sm text-muted mb-16">Drop or browse a file, or paste text directly. One entry per line. Supported: <strong>.txt · .pdf · .docx · .xlsx · .csv</strong></p>
+
+          <!-- Drop Zone -->
+          <div class="bulk-area" id="bulk-drop-zone" onclick="document.getElementById('file-input').click()">
+            <input type="file" id="file-input" accept=".txt,.pdf,.docx,.xlsx,.xls,.csv" style="display:none;" onchange="handleFileSelect(this.files[0])">
+
+            <div id="drop-idle">
+              <div style="display:flex;justify-content:center;gap:18px;margin-bottom:14px;font-size:28px;">
+                <span title=".txt">📄</span>
+                <span title=".pdf">📕</span>
+                <span title=".docx">📘</span>
+                <span title=".xlsx">📗</span>
+                <span title=".csv">📊</span>
+              </div>
+              <div style="font-weight:600;font-size:15px;margin-bottom:6px;">Drop a file here or click to browse</div>
+              <div class="text-sm text-muted">.txt &nbsp;·&nbsp; .pdf &nbsp;·&nbsp; .docx &nbsp;·&nbsp; .xlsx &nbsp;·&nbsp; .csv</div>
+            </div>
+
+            <div id="drop-loading" style="display:none;">
+              <div class="spinner" style="width:28px;height:28px;border-width:3px;"></div>
+              <div style="margin-top:10px;font-size:13px;color:var(--text2)">Reading file…</div>
+            </div>
+
+            <div id="drop-success" style="display:none;">
+              <div style="font-size:28px;margin-bottom:8px;">✅</div>
+              <div id="drop-filename" style="font-weight:600;font-size:14px;"></div>
+              <div id="drop-linecount" style="font-size:12px;color:var(--text2);margin-top:4px;"></div>
+              <div style="font-size:11px;color:var(--text3);margin-top:8px;">Click to replace file</div>
+            </div>
+
+            <div id="drop-error" style="display:none;">
+              <div style="font-size:24px;margin-bottom:8px;">❌</div>
+              <div id="drop-error-msg" style="font-size:13px;color:var(--negative);"></div>
+              <div style="font-size:11px;color:var(--text3);margin-top:6px;">Click to try again</div>
+            </div>
+          </div>
+
+          <!-- Divider -->
+          <div style="display:flex;align-items:center;gap:12px;margin:18px 0;">
+            <div style="flex:1;height:1px;background:var(--border);"></div>
+            <div style="font-size:12px;color:var(--text3);font-weight:600;">OR PASTE TEXT</div>
+            <div style="flex:1;height:1px;background:var(--border);"></div>
+          </div>
+
+          <textarea class="input-area" id="bulk-input" placeholder="The product is fantastic, exactly what I needed!
+Support took 3 days to respond, very disappointing.
+Average experience, nothing special.
+…one entry per line…" rows="7"></textarea>
+
+          <div class="input-row" style="margin-top:14px;">
+            <select class="select-field" id="bulk-source">
+              <option value="bulk_import">Bulk Import</option>
+              <option value="customer_review">Customer Reviews</option>
+              <option value="nps_survey">NPS Survey</option>
+              <option value="support_ticket">Support Tickets</option>
+              <option value="social_media">Social Media</option>
+            </select>
+            <button class="btn btn-ghost btn-sm" onclick="clearBulk()">✕ Clear</button>
+            <button class="btn btn-primary" onclick="bulkAnalyze()" id="bulk-btn">
+              <span>⚡</span> Analyze All
+            </button>
+          </div>
+          <div class="loader" id="bulk-loader"><div class="spinner"></div><div style="margin-top:12px;color:var(--text3)">Analyzing batch…</div></div>
+          <div id="bulk-result" style="margin-top:16px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div id="tab-dashboard" class="tab-panel">
+      <div class="content">
+        <div id="dashboard-empty" class="empty-state">
+          <div class="icon">📊</div>
+          <p>Analyze some text first to see your dashboard</p>
+        </div>
+        <div id="dashboard-content" style="display:none;">
+          <div class="stats-grid" id="dashboard-stats"></div>
+          <div class="grid-2 mb-24">
+            <div class="card">
+              <div class="card-title">Top Themes</div>
+              <div id="theme-bars"></div>
+            </div>
+            <div class="card">
+              <div class="card-title">Emotion Breakdown</div>
+              <div id="emotion-bars"></div>
+            </div>
+          </div>
+          <div class="grid-2">
+            <div class="card">
+              <div class="card-title">Source Breakdown</div>
+              <div id="source-breakdown"></div>
+            </div>
+            <div class="card">
+              <div class="card-title">Intent Signals</div>
+              <div id="intent-signals"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CHARTS -->
+    <div id="tab-visualize" class="tab-panel">
+      <div class="content">
+        <div class="flex-between mb-24">
+          <div>
+            <div style="font-size:18px;font-weight:700">Visual Analytics</div>
+            <div class="text-sm text-muted mt-16">Charts refresh from current dataset</div>
+          </div>
+          <button class="btn btn-primary" onclick="loadCharts()">🔄 Refresh Charts</button>
+        </div>
+        <div class="loader" id="chart-loader"><div class="spinner"></div><div style="margin-top:12px;color:var(--text3)">Generating charts…</div></div>
+        <div id="charts-empty" class="empty-state">
+          <div class="icon">📈</div>
+          <p>Analyze some text, then click "Refresh Charts"</p>
+        </div>
+        <div id="charts-grid" class="charts-grid" style="display:none;"></div>
+      </div>
+    </div>
+
+    <!-- PM REPORT -->
+    <div id="tab-pm" class="tab-panel">
+      <div class="content">
+        <div class="flex-between mb-24">
+          <div>
+            <div style="font-size:18px;font-weight:700">Product & Consulting Report</div>
+            <div class="text-sm text-muted mt-16">Executive-ready insights, priority matrix &amp; recommended actions</div>
+          </div>
+          <button class="btn btn-primary" onclick="loadPMReport()">🔄 Generate Report</button>
+        </div>
+
+        <div id="pm-empty" class="empty-state">
+          <div class="icon">🎯</div>
+          <p>Analyze some text, then click "Generate Report"</p>
+        </div>
+        <div id="pm-content" style="display:none;">
+
+          <!-- Executive Health Banner -->
+          <div id="pm-health-banner" class="health-banner mb-24">
+            <div>
+              <div class="nps-label">Overall Health</div>
+              <div id="pm-health-label" class="health-score" style="margin-top:6px;"></div>
+            </div>
+            <div style="flex:1">
+              <div style="font-size:13px;color:var(--text2);margin-bottom:8px;">Net Promoter Score</div>
+              <div id="pm-nps-score" style="font-size:40px;font-weight:900;"></div>
+              <div id="pm-nps-breakdown" style="font-size:12px;color:var(--text3);margin-top:4px;"></div>
+            </div>
+            <div style="flex:1">
+              <div style="font-size:13px;color:var(--text2);margin-bottom:8px;">Avg Polarity</div>
+              <div id="pm-avg-polarity" style="font-size:28px;font-weight:700;"></div>
+            </div>
+            <div style="flex:1">
+              <div style="font-size:13px;color:var(--text2);margin-bottom:8px;">Total Analyzed</div>
+              <div id="pm-total" style="font-size:28px;font-weight:700;color:var(--accent);"></div>
+            </div>
+          </div>
+
+          <!-- Alert Row -->
+          <div id="pm-alerts" class="mb-24"></div>
+
+          <!-- Priority Matrix & Actions -->
+          <div class="grid-2 mb-24">
+            <div class="card" style="grid-column: span 2;">
+              <div class="card-title">🎯 Recommended Actions</div>
+              <div id="pm-actions"></div>
+            </div>
+          </div>
+
+          <!-- Priority Signals Table -->
+          <div class="card mb-24">
+            <div class="card-title">Priority Signals (Top 10)</div>
+            <div style="overflow-x:auto;">
+              <table class="priority-table">
+                <thead>
+                  <tr>
+                    <th>Text</th>
+                    <th>Sentiment</th>
+                    <th>NPS</th>
+                    <th>Flags</th>
+                    <th>Themes</th>
+                    <th>Polarity</th>
+                  </tr>
+                </thead>
+                <tbody id="priority-table-body"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Risks & Opportunities -->
+          <div class="grid-2">
+            <div class="card">
+              <div class="card-title">⚠️ Risks</div>
+              <div id="pm-risks"></div>
+            </div>
+            <div class="card">
+              <div class="card-title">💡 Opportunities</div>
+              <div id="pm-opportunities"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HISTORY -->
+    <div id="tab-history" class="tab-panel">
+      <div class="content">
+        <div class="flex-between mb-24">
+          <div style="font-size:18px;font-weight:700">Entry History</div>
+          <div class="flex-row">
+            <input type="text" class="tag-input" id="search-history" placeholder="Search entries…" oninput="filterHistory(this.value)" style="width:200px;">
+            <button class="btn btn-ghost btn-sm" onclick="loadHistory()">🔄 Refresh</button>
+          </div>
+        </div>
+        <div id="history-list"></div>
+      </div>
+    </div>
+
+  </div><!-- /main -->
+</div><!-- /shell -->
+
+<div class="toast" id="toast"></div>
+
+<script>
+let allEntries = [];
+let currentTab = 'analyze';
+
+// ── TAB SWITCHING ──────────────────────────────────────────────────────────
+function switchTab(tab) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  event.currentTarget.classList.add('active');
+  currentTab = tab;
+
+  const titles = {
+    analyze: 'Text Analysis',
+    bulk: 'Bulk Import',
+    dashboard: 'Dashboard',
+    visualize: 'Visual Analytics',
+    pm: 'PM Report',
+    history: 'Entry History',
+  };
+  document.getElementById('page-title').textContent = titles[tab] || tab;
+
+  if (tab === 'dashboard') refreshDashboard();
+  if (tab === 'history') loadHistory();
+}
+
+// ── ANALYZE ────────────────────────────────────────────────────────────────
+async function analyzeText() {
+  const text = document.getElementById('text-input').value.trim();
+  const source = document.getElementById('source-select').value;
+  const tags = document.getElementById('tag-input').value.split(',').map(t => t.trim()).filter(Boolean);
+
+  if (!text) { showToast('Please enter some text', 'error'); return; }
+
+  const btn = document.getElementById('analyze-btn');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner" style="width:16px;height:16px;border-width:2px;"></span> Analyzing…';
+
+  try {
+    const res = await fetch('/analyze', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ text, source, tags })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Analysis failed');
+
+    allEntries.unshift(data);
+    renderResult(data);
+    updateLiveStats(data);
+    updateEntryCount(data.total || allEntries.length);
+    document.getElementById('text-input').value = '';
+    document.getElementById('tag-input').value = '';
+    document.getElementById('char-count').textContent = '0';
+    showToast(`Analyzed as ${data.sentiment} (${data.polarity > 0 ? '+' : ''}${data.polarity})`, 'success');
+  } catch (e) {
+    showToast(e.message, 'error');
+  } finally {
+    btn.disabled = false; btn.innerHTML = '<span>⚡</span> Analyze';
+  }
+}
+
+function renderResult(data) {
+  const container = document.getElementById('results-container');
+  document.getElementById('live-stats').style.display = 'block';
+
+  const sentClass = data.sentiment === 'Positive' ? 'pos' : data.sentiment === 'Negative' ? 'neg' : 'neu';
+  const badge = data.sentiment === 'Positive' ? 'badge-pos' : data.sentiment === 'Negative' ? 'badge-neg' : 'badge-neu';
+  const polPct = Math.min(Math.abs(data.polarity) * 100, 100);
+  const polColor = data.polarity > 0 ? 'var(--positive)' : data.polarity < 0 ? 'var(--negative)' : 'var(--neutral)';
+
+  const emotionEmoji = {joy:'😊', anger:'😠', fear:'😨', sadness:'😢', surprise:'😮', trust:'🤝', neutral:'😐'};
+  const npsColor = data.nps_bucket === 'Promoter' ? 'badge-pos' : data.nps_bucket === 'Detractor' ? 'badge-neg' : 'badge-neu';
+
+  const flagsHtml = (data.intent_flags || []).map(f => `<span class="badge badge-warn">${f}</span>`).join('');
+  const themesHtml = (data.themes || []).map(t => `<span class="badge badge-acc">${t}</span>`).join('');
+  const tagsHtml = (data.custom_tags || []).map(t => `<span class="badge" style="background:rgba(255,255,255,0.05);color:var(--text2);">#${t}</span>`).join('');
+
+  const confDots = [1,2,3].map(i => `<div class="conf-dot ${data.confidence >= i * 0.33 ? 'active' : ''}"></div>`).join('');
+
+  const el = document.createElement('div');
+  el.className = `result-entry ${sentClass}`;
+  el.innerHTML = `
+    <div class="result-header">
+      <div class="result-text">"${escHtml(data.original_text)}"</div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;min-width:140px;margin-left:16px;">
+        <span class="badge ${badge}">${data.sentiment}</span>
+        <span class="badge ${npsColor}" style="font-size:10px;">${data.nps_bucket}</span>
+      </div>
+    </div>
+    <div class="polarity-bar"><div class="polarity-fill" style="width:${polPct}%;background:${polColor};"></div></div>
+    <div class="result-meta">
+      <span class="mono text-xs text-muted">polarity: ${data.polarity > 0 ? '+' : ''}${data.polarity}</span>
+      <span class="mono text-xs text-muted">VADER: ${data.vader_compound > 0 ? '+' : ''}${data.vader_compound}</span>
+      <span class="mono text-xs text-muted">subjectivity: ${data.subjectivity}</span>
+      <span class="emotion-chip">${emotionEmoji[data.emotion] || '😐'} ${data.emotion}</span>
+      <div class="conf-meter" title="Confidence: ${data.confidence_label}">${confDots}</div>
+      <span class="text-xs text-dim">${data.confidence_label} confidence</span>
+    </div>
+    ${flagsHtml || themesHtml || tagsHtml ? `<div class="result-meta" style="margin-top:6px;">${flagsHtml}${themesHtml}${tagsHtml}</div>` : ''}
+    <div class="result-meta" style="margin-top:6px;">
+      <span class="text-xs text-dim">Source: ${data.source}</span>
+      <span class="text-xs text-dim">${data.word_count} words</span>
+      <span class="text-xs text-dim">${new Date(data.timestamp).toLocaleTimeString()}</span>
+    </div>
+  `;
+  container.prepend(el);
+}
+
+function updateLiveStats(data) {
+  if (data.total === undefined) return;
+  document.getElementById('stat-pos').textContent = data.positive_count || 0;
+  document.getElementById('stat-neg').textContent = data.negative_count || 0;
+  document.getElementById('stat-neu').textContent = data.neutral_count || 0;
+  document.getElementById('stat-pos-pct').textContent = (data.positive_pct || 0) + '%';
+  document.getElementById('stat-neg-pct').textContent = (data.negative_pct || 0) + '%';
+  document.getElementById('stat-neu-pct').textContent = (data.neutral_pct || 0) + '%';
+  document.getElementById('stat-polarity').textContent = (data.combined_polarity > 0 ? '+' : '') + (data.combined_polarity || 0);
+  document.getElementById('stat-nps').textContent = data.nps_score !== undefined ? data.nps_score : '—';
+  document.getElementById('stat-nps-label').textContent = data.nps_score >= 30 ? '🟢 Strong' : data.nps_score >= 0 ? '🟡 Moderate' : '🔴 At Risk';
+  document.getElementById('stat-urgent').textContent = data.high_urgency_count || 0;
+  document.getElementById('stat-churn-risk').textContent = (data.churn_risk_count || 0) + ' churn risk';
+}
+
+// ── BULK ANALYZE ───────────────────────────────────────────────────────────
+async function bulkAnalyze() {
+  const rawText = document.getElementById('bulk-input').value.trim();
+  const source = document.getElementById('bulk-source').value;
+  if (!rawText) { showToast('Paste some text first', 'error'); return; }
+
+  const texts = rawText.split('\n').map(l => l.trim()).filter(Boolean);
+  if (!texts.length) { showToast('No valid lines found', 'error'); return; }
+
+  const btn = document.getElementById('bulk-btn');
+  btn.disabled = true;
+  document.getElementById('bulk-loader').style.display = 'block';
+  document.getElementById('bulk-result').innerHTML = '';
+
+  try {
+    const res = await fetch('/bulk_analyze', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ texts, source })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error);
+
+    updateEntryCount(data.total || texts.length);
+    document.getElementById('bulk-result').innerHTML = `
+      <div class="card" style="border-color:var(--positive)">
+        <div class="card-title" style="color:var(--positive)">✅ Batch Complete</div>
+        <div class="stats-grid">
+          <div class="stat-card"><div class="stat-label">Analyzed</div><div class="stat-value stat-acc">${data.count}</div></div>
+          <div class="stat-card"><div class="stat-label">Positive</div><div class="stat-value stat-pos">${data.positive_count || 0}</div><div class="stat-sub">${data.positive_pct || 0}%</div></div>
+          <div class="stat-card"><div class="stat-label">Negative</div><div class="stat-value stat-neg">${data.negative_count || 0}</div><div class="stat-sub">${data.negative_pct || 0}%</div></div>
+          <div class="stat-card"><div class="stat-label">NPS Score</div><div class="stat-value" style="color:var(--warning)">${data.nps_score !== undefined ? data.nps_score : '—'}</div></div>
+          <div class="stat-card"><div class="stat-label">Churn Risk</div><div class="stat-value stat-neg">${data.churn_risk_count || 0}</div></div>
+          <div class="stat-card"><div class="stat-label">Feature Reqs</div><div class="stat-value stat-acc">${data.feature_request_count || 0}</div></div>
+        </div>
+        <div style="margin-top:12px;font-size:13px;color:var(--text2)">Switch to <strong>Dashboard</strong> or <strong>PM Report</strong> for full insights.</div>
+      </div>
+    `;
+    showToast(`Analyzed ${data.count} entries`, 'success');
+  } catch (e) {
+    showToast(e.message, 'error');
+  } finally {
+    btn.disabled = false;
+    document.getElementById('bulk-loader').style.display = 'none';
+  }
+}
+
+// ── CHARTS ─────────────────────────────────────────────────────────────────
+async function loadCharts() {
+  document.getElementById('chart-loader').style.display = 'block';
+  document.getElementById('charts-empty').style.display = 'none';
+  document.getElementById('charts-grid').style.display = 'none';
+
+  try {
+    const res = await fetch('/visualize');
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error);
+
+    const chartConfig = [
+      { key: 'sentiment_distribution', title: '🍩 Sentiment Distribution' },
+      { key: 'polarity_trend', title: '📈 Polarity Trend' },
+      { key: 'emotion_breakdown', title: '💭 Emotion Breakdown' },
+      { key: 'theme_heatmap', title: '🗂️ Theme × Sentiment Matrix' },
+      { key: 'nps_distribution', title: '📊 NPS Bucket Distribution' },
+      { key: 'scatter_map', title: '🎯 Polarity vs Subjectivity Map' },
+      { key: 'positive_wordcloud', title: '✅ Positive Signal Words' },
+      { key: 'negative_wordcloud', title: '⚠️ Pain Point Words' },
+    ];
+
+    const grid = document.getElementById('charts-grid');
+    grid.innerHTML = '';
+    chartConfig.forEach(c => {
+      if (data[c.key]) {
+        grid.innerHTML += `
+          <div class="chart-card">
+            <div class="chart-header"><div class="chart-title">${c.title}</div></div>
+            <img src="data:image/png;base64,${data[c.key]}" alt="${c.title}" loading="lazy">
+          </div>`;
+      }
+    });
+
+    document.getElementById('charts-grid').style.display = 'grid';
+  } catch (e) {
+    document.getElementById('charts-empty').style.display = 'block';
+    showToast(e.message, 'error');
+  } finally {
+    document.getElementById('chart-loader').style.display = 'none';
+  }
+}
+
+// ── DASHBOARD ──────────────────────────────────────────────────────────────
+async function refreshDashboard() {
+  try {
+    const res = await fetch('/pm_report');
+    if (!res.ok) { document.getElementById('dashboard-empty').style.display = 'block'; document.getElementById('dashboard-content').style.display = 'none'; return; }
+    const data = await res.json();
+    document.getElementById('dashboard-empty').style.display = 'none';
+    document.getElementById('dashboard-content').style.display = 'block';
+
+    const statsHtml = `
+      <div class="stat-card" style="--accent-color:var(--positive)"><div class="stat-label">Total</div><div class="stat-value stat-acc">${data.total || 0}</div><div class="stat-sub">entries</div></div>
+      <div class="stat-card" style="--accent-color:var(--positive)"><div class="stat-label">Positive</div><div class="stat-value stat-pos">${data.positive_count || 0}</div><div class="stat-sub">${data.positive_pct || 0}%</div></div>
+      <div class="stat-card" style="--accent-color:var(--negative)"><div class="stat-label">Negative</div><div class="stat-value stat-neg">${data.negative_count || 0}</div><div class="stat-sub">${data.negative_pct || 0}%</div></div>
+      <div class="stat-card" style="--accent-color:var(--warning)"><div class="stat-label">NPS</div><div class="stat-value" style="color:var(--warning)">${data.nps_score !== undefined ? data.nps_score : '—'}</div><div class="stat-sub">${data.promoters || 0}P · ${data.passives || 0}Pa · ${data.detractors || 0}D</div></div>
+      <div class="stat-card" style="--accent-color:var(--negative)"><div class="stat-label">Churn Risk</div><div class="stat-value stat-neg">${data.churn_risk_count || 0}</div><div class="stat-sub">${data.high_urgency_count || 0} urgent</div></div>
+      <div class="stat-card" style="--accent-color:var(--accent)"><div class="stat-label">Feature Reqs</div><div class="stat-value stat-acc">${data.feature_request_count || 0}</div><div class="stat-sub">opportunities</div></div>
+    `;
+    document.getElementById('dashboard-stats').innerHTML = statsHtml;
+
+    // Theme bars
+    const topThemes = data.top_themes || [];
+    const maxTheme = topThemes.length ? topThemes[0][1] : 1;
+    document.getElementById('theme-bars').innerHTML = topThemes.length ? topThemes.map(([t, c]) => `
+      <div class="theme-bar-wrap">
+        <div class="theme-bar-label"><span>${t}</span><span>${c}</span></div>
+        <div class="theme-bar-track"><div class="theme-bar-fill" style="width:${(c/maxTheme*100)}%"></div></div>
+      </div>`).join('') : '<div class="text-sm text-muted">No theme data yet</div>';
+
+    // Emotion bars
+    const emotions = data.emotion_counts || {};
+    const emotionEmoji = {joy:'😊',anger:'😠',fear:'😨',sadness:'😢',surprise:'😮',trust:'🤝',neutral:'😐'};
+    const maxEmo = Math.max(...Object.values(emotions), 1);
+    document.getElementById('emotion-bars').innerHTML = Object.keys(emotions).length ? Object.entries(emotions).sort((a,b) => b[1]-a[1]).map(([e,c]) => `
+      <div class="theme-bar-wrap">
+        <div class="theme-bar-label"><span>${emotionEmoji[e]||'😐'} ${e}</span><span>${c}</span></div>
+        <div class="theme-bar-track"><div class="theme-bar-fill" style="width:${(c/maxEmo*100)}%;background:linear-gradient(90deg,var(--accent2),var(--accent));"></div></div>
+      </div>`).join('') : '<div class="text-sm text-muted">No emotion data yet</div>';
+
+    // Source breakdown
+    const sources = data.source_counts || {};
+    document.getElementById('source-breakdown').innerHTML = Object.keys(sources).length ? Object.entries(sources).map(([s, c]) => `
+      <div class="flex-between" style="padding:8px 0;border-bottom:1px solid var(--border);">
+        <span class="text-sm">${s.replace(/_/g,' ')}</span>
+        <span class="badge badge-acc">${c}</span>
+      </div>`).join('') : '<div class="text-sm text-muted">No source data</div>';
+
+    // Intent signals
+    const flags = data.flag_counts || {};
+    document.getElementById('intent-signals').innerHTML = Object.keys(flags).length ? Object.entries(flags).map(([f, c]) => `
+      <div class="action-card" style="padding:12px 14px;">
+        <div style="flex:1"><div class="text-sm">${f}</div></div>
+        <span class="badge badge-warn">${c}</span>
+      </div>`).join('') : '<div class="text-sm text-muted">No signals detected</div>';
+
+  } catch(e) {
+    document.getElementById('dashboard-empty').style.display = 'block';
+    document.getElementById('dashboard-content').style.display = 'none';
+  }
+}
+
+// ── PM REPORT ──────────────────────────────────────────────────────────────
+async function loadPMReport() {
+  document.getElementById('pm-empty').style.display = 'none';
+  document.getElementById('pm-content').style.display = 'none';
+
+  try {
+    const res = await fetch('/pm_report');
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error);
+
+    const ex = data.executive_summary || {};
+    const health = (ex.overall_health || 'Moderate').toLowerCase().replace(' ', '');
+    const banner = document.getElementById('pm-health-banner');
+    banner.className = `health-banner mb-24 ${health}`;
+    document.getElementById('pm-health-label').className = `health-score ${health}`;
+    document.getElementById('pm-health-label').textContent = ex.overall_health || '—';
+    document.getElementById('pm-nps-score').textContent = ex.nps_score !== undefined ? ex.nps_score : '—';
+    document.getElementById('pm-nps-score').style.color = ex.nps_score >= 30 ? 'var(--positive)' : ex.nps_score >= 0 ? 'var(--neutral)' : 'var(--negative)';
+    document.getElementById('pm-nps-breakdown').textContent = `${data.promoters||0} Promoters · ${data.passives||0} Passives · ${data.detractors||0} Detractors`;
+    document.getElementById('pm-avg-polarity').textContent = (ex.avg_polarity > 0 ? '+' : '') + (ex.avg_polarity || 0);
+    document.getElementById('pm-avg-polarity').style.color = ex.avg_polarity > 0 ? 'var(--positive)' : ex.avg_polarity < 0 ? 'var(--negative)' : 'var(--neutral)';
+    document.getElementById('pm-total').textContent = ex.total_analyzed || 0;
+
+    // Alerts
+    const alerts = [];
+    if ((ex.high_urgency || 0) > 0) alerts.push(`<div class="action-card" style="border-color:var(--negative);border-left:3px solid var(--negative);"><span style="font-size:18px">🚨</span><div class="action-content"><div class="action-title">${ex.high_urgency} High-Urgency Item${ex.high_urgency > 1 ? 's' : ''}</div><div class="action-rationale">Immediate attention required — these items contain critical signals.</div></div></div>`);
+    if ((ex.churn_risk || 0) > 0) alerts.push(`<div class="action-card" style="border-color:var(--warning);border-left:3px solid var(--warning);"><span style="font-size:18px">⚠️</span><div class="action-content"><div class="action-title">${ex.churn_risk} Churn Risk Signal${ex.churn_risk > 1 ? 's' : ''}</div><div class="action-rationale">Revenue at risk — accounts showing intent to leave.</div></div></div>`);
+    document.getElementById('pm-alerts').innerHTML = alerts.join('');
+
+    // Actions
+    const actions = data.recommended_actions || [];
+    const pClass = {'P0':'p0','P1':'p1','P2':'p2'};
+    document.getElementById('pm-actions').innerHTML = actions.map(a => `
+      <div class="action-card">
+        <span class="p-badge ${pClass[a.priority] || 'p2'}">${a.priority}</span>
+        <div class="action-content">
+          <div class="action-title">${a.action}</div>
+          <div class="action-rationale">${a.rationale}</div>
+          <div class="action-owner">Owner: ${a.owner}</div>
+        </div>
+      </div>`).join('');
+
+    // Priority table
+    const matrix = data.priority_matrix || [];
+    const sentBadge = s => s === 'Positive' ? 'badge-pos' : s === 'Negative' ? 'badge-neg' : 'badge-neu';
+    const npsBadge = n => n === 'Promoter' ? 'badge-pos' : n === 'Detractor' ? 'badge-neg' : 'badge-neu';
+    document.getElementById('priority-table-body').innerHTML = matrix.map(item => `
+      <tr>
+        <td style="max-width:280px;font-size:12.5px;">${escHtml(item.text)}…</td>
+        <td><span class="badge ${sentBadge(item.sentiment)}">${item.sentiment}</span></td>
+        <td><span class="badge ${npsBadge(item.nps_bucket)}">${item.nps_bucket}</span></td>
+        <td style="font-size:11px;">${(item.flags||[]).join(' ')}</td>
+        <td style="font-size:11px;color:var(--text2);">${(item.themes||[]).join(', ')}</td>
+        <td class="mono" style="font-size:12px;color:${item.impact > 0.5 ? 'var(--negative)' : 'var(--text2)'};">${item.impact}</td>
+      </tr>`).join('');
+
+    // Risks
+    const risks = data.risks || [];
+    document.getElementById('pm-risks').innerHTML = risks.length ? risks.map(r => `
+      <div style="padding:10px 0;border-bottom:1px solid var(--border);font-size:13px;">
+        <div style="margin-bottom:4px;">"${escHtml(r.text)}…"</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">${(r.themes||[]).map(t => `<span class="badge badge-neg" style="font-size:10px;">${t}</span>`).join('')}</div>
+      </div>`).join('') : '<div class="text-sm text-muted">No risks detected — great sign! 🎉</div>';
+
+    // Opportunities
+    const opps = data.opportunities || [];
+    document.getElementById('pm-opportunities').innerHTML = opps.length ? opps.map(o => `
+      <div style="padding:10px 0;border-bottom:1px solid var(--border);font-size:13px;">
+        <div style="margin-bottom:4px;">"${escHtml(o.text)}…"</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">${(o.themes||[]).map(t => `<span class="badge badge-acc" style="font-size:10px;">${t}</span>`).join('')}</div>
+      </div>`).join('') : '<div class="text-sm text-muted">No explicit feature requests yet</div>';
+
+    document.getElementById('pm-content').style.display = 'block';
+  } catch (e) {
+    document.getElementById('pm-empty').style.display = 'block';
+    showToast(e.message, 'error');
+  }
+}
+
+// ── HISTORY ────────────────────────────────────────────────────────────────
+async function loadHistory() {
+  try {
+    const res = await fetch('/history');
+    const data = await res.json();
+    renderHistory(data.results || []);
+  } catch(e) {}
+}
+
+function renderHistory(entries) {
+  const container = document.getElementById('history-list');
+  if (!entries.length) {
+    container.innerHTML = '<div class="empty-state"><div class="icon">🗂️</div><p>No entries yet</p></div>';
+    return;
+  }
+  container.innerHTML = [...entries].reverse().map(e => {
+    const badge = e.sentiment === 'Positive' ? 'badge-pos' : e.sentiment === 'Negative' ? 'badge-neg' : 'badge-neu';
+    return `
+      <div class="result-entry ${e.sentiment === 'Positive' ? 'pos' : e.sentiment === 'Negative' ? 'neg' : 'neu'}">
+        <div class="result-header">
+          <div class="result-text">${escHtml(e.original_text)}</div>
+          <span class="badge ${badge}">${e.sentiment}</span>
+        </div>
+        <div class="result-meta">
+          <span class="mono text-xs text-muted">${e.polarity > 0 ? '+' : ''}${e.polarity}</span>
+          <span class="emotion-chip">${e.emotion}</span>
+          ${(e.intent_flags||[]).map(f=>`<span class="badge badge-warn">${f}</span>`).join('')}
+          <span class="text-xs text-dim">${e.source}</span>
+          <span class="text-xs text-dim">${new Date(e.timestamp).toLocaleString()}</span>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function filterHistory(query) {
+  document.querySelectorAll('#history-list .result-entry').forEach(el => {
+    el.style.display = el.textContent.toLowerCase().includes(query.toLowerCase()) ? '' : 'none';
+  });
+}
+
+// ── EXPORT ────────────────────────────────────────────────────────────────
+async function exportData() {
+  try {
+    const res = await fetch('/export');
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error);
+    const blob = new Blob([JSON.stringify(data.data, null, 2)], {type: 'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url;
+    a.download = `sentimentiq_export_${new Date().toISOString().split('T')[0]}.json`;
+    a.click(); URL.revokeObjectURL(url);
+    showToast(`Exported ${data.count} entries`, 'success');
+  } catch (e) {
+    showToast(e.message || 'Nothing to export', 'error');
+  }
+}
+
+// ── CLEAR ─────────────────────────────────────────────────────────────────
+async function clearAll() {
+  if (!confirm('Clear all analysis data?')) return;
+  await fetch('/clear', {method:'POST'});
+  allEntries = [];
+  document.getElementById('results-container').innerHTML = '';
+  document.getElementById('live-stats').style.display = 'none';
+  updateEntryCount(0);
+  showToast('All data cleared', 'success');
+}
+
+// ── UTILITIES ─────────────────────────────────────────────────────────────
+function updateCharCount(el) {
+  document.getElementById('char-count').textContent = el.value.length;
+}
+function updateEntryCount(n) {
+  document.getElementById('entry-count').textContent = n + ' entr' + (n === 1 ? 'y' : 'ies');
+}
+function escHtml(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function showToast(msg, type = 'success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast ${type}`;
+  t.style.display = 'block';
+  setTimeout(() => t.style.display = 'none', 3200);
+}
+
+// Keyboard shortcut: Enter to analyze
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+    if (currentTab === 'analyze') analyzeText();
+    if (currentTab === 'bulk') bulkAnalyze();
+  }
+});
+
+// ── FILE IMPORT (drag & drop + browse) ────────────────────────────────────
+const dz = document.getElementById('bulk-drop-zone');
+
+dz.addEventListener('dragover', e => {
+  e.preventDefault();
+  e.stopPropagation();
+  dz.classList.add('drag-over');
+});
+dz.addEventListener('dragleave', e => {
+  e.stopPropagation();
+  dz.classList.remove('drag-over');
+});
+dz.addEventListener('drop', e => {
+  e.preventDefault();
+  e.stopPropagation();
+  dz.classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (file) handleFileSelect(file);
+});
+
+async function handleFileSelect(file) {
+  if (!file) return;
+
+  const allowed = ['.txt', '.pdf', '.docx', '.xlsx', '.xls', '.csv'];
+  const ext = '.' + file.name.split('.').pop().toLowerCase();
+  if (!allowed.includes(ext)) {
+    setDropState('error', `Unsupported file type: ${ext}. Use: ${allowed.join(', ')}`);
+    return;
+  }
+
+  setDropState('loading');
+
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const res = await fetch('/parse_file', { method: 'POST', body: formData });
+    const data = await res.json();
+
+    if (!res.ok) throw new Error(data.error || 'Failed to parse file');
+    if (!data.lines || data.lines.length === 0) throw new Error('No text found in file');
+
+    // Populate textarea
+    document.getElementById('bulk-input').value = data.lines.join('\n');
+    setDropState('success', file.name, data.lines.length);
+    showToast(`Loaded ${data.lines.length} lines from ${file.name}`, 'success');
+
+  } catch (err) {
+    setDropState('error', err.message);
+    showToast(err.message, 'error');
+  }
+}
+
+function setDropState(state, arg1 = '', arg2 = 0) {
+  document.getElementById('drop-idle').style.display    = state === 'idle'    ? 'block' : 'none';
+  document.getElementById('drop-loading').style.display = state === 'loading' ? 'block' : 'none';
+  document.getElementById('drop-success').style.display = state === 'success' ? 'block' : 'none';
+  document.getElementById('drop-error').style.display   = state === 'error'   ? 'block' : 'none';
+  if (state === 'success') {
+    document.getElementById('drop-filename').textContent  = `📄 ${arg1}`;
+    document.getElementById('drop-linecount').textContent = `${arg2} entr${arg2 === 1 ? 'y' : 'ies'} extracted`;
+  }
+  if (state === 'error') {
+    document.getElementById('drop-error-msg').textContent = arg1;
+  }
+}
+
+function clearBulk() {
+  document.getElementById('bulk-input').value = '';
+  document.getElementById('bulk-result').innerHTML = '';
+  document.getElementById('file-input').value = '';
+  setDropState('idle');
+}
+</script>
+</body>
+</html>
